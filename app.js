@@ -12,7 +12,7 @@ app.use(express.urlencoded({
 }));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost:27017/todolistDB", {
+mongoose.connect("mongodb://localhost:27017/wikiDB", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useFindAndModify: false
@@ -31,9 +31,41 @@ const articleSchema = new mongoose.Schema({
 
 const Article = mongoose.model("Article", articleSchema);
 
-app.get("/", (req, res) => {
-  console.log("Hello world!");
-});
+app.route("/articles")
+  .get((req, res) => {
+
+    Article.find((err, allArticles) => {
+      if (!err) {
+        res.send(allArticles);
+      } else {
+        res.send(err);
+      }
+    });
+  })
+  .post((req, res) => {
+    const newArticle = new Article({
+      title: req.body.title,
+      content: req.body.content
+    });
+
+    newArticle.save(err => {
+      if (err) {
+        res.send(err);
+      } else {
+        res.send("The article was added successfully!");
+      }
+    });
+
+  })
+  .delete((req, res) => {
+    Article.deleteMany(err => {
+      if (!err) {
+        res.send("The collection was deleted successfully.");
+      } else {
+        res.send(err);
+      }
+    });
+  });
 
 app.listen(3000, function() {
   console.log("Server started on port 3000");
